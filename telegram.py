@@ -26,7 +26,7 @@ SCRIPT_DESC    = "Formats teleirc messages"
 settings = {
     "username": "EmmaGoldman",
     "re": "^(?P<update>\w+)(?P<separator>\W+?)<(?P<username>[^>]+)> (?P<dent>.+)$",
-    "me": "^(?P<update>\w+)(?P<separator>\W+?)(?P<username>\w+): \/me (?P<dent>.+)$",
+    "me": "^(?P<update>\w+)(?P<separator>\W+?)<(?P<username>[^>]+)> \/me (?P<dent>.+)$",
 
     "nick_color": "green",
     "hashtag_color": "blue",
@@ -37,8 +37,7 @@ settings = {
     "group_color_identifier": "green",
 
     "nick_re": "(@)([a-zA-Z0-9]+ )",
-    "hashtag_re": "(#)([a-zA-Z0-9]+ )",
-    "group_re": "(!)([a-zA-Z0-9]+ )"
+    "hashtag_re": "(#)([a-zA-Z0-9]+ )"
 }
 
 USERS = {}
@@ -46,7 +45,7 @@ USERS = {}
 def colorize (message):
     """Colorizes replies, hashtags and groups"""
 
-    for identifier in ['nick','hashtag','group']:
+    for identifier in ['nick','hashtag']:
         identifier_name = ''.join([identifier, '_re'])
         identifier_color = ''.join([identifier, '_color'])
         identifier_color_identifier = ''.join([identifier, '_color_identifier'])
@@ -71,16 +70,11 @@ def nick_color (nick):
         pass
     else:
         USERS[nick] = {}
-        USERS[nick]['color'] = ''.join(['chat_nick_color', str(randint(1,10)).zfill(2)])
+        USERS[nick]['color'] = ''.join(['chat_nick_color', str(randint(1,255))])
 
-    nick = ''.join([weechat.color(USERS[nick]['color']), nick, weechat.color('reset')])
-    return nick
+    return ''.join([weechat.color(USERS[nick]['color']), nick, weechat.color('reset')])
 
 def parse (server, modifier, data, the_string):
-    log = open('/tmp/telegram.log', 'a')
-    log.write(the_string)
-    log.write("\n")
-
     flags = data.split(';')[2].split(',')
 
     # This is the user we should be parsing messages from, with
@@ -95,10 +89,6 @@ def parse (server, modifier, data, the_string):
             dent = colorize(m.group('dent'))
             username = nick_color(m.group('username'))
             the_string = ''.join([ username, m.group('separator'), dent ])
-            log.write(the_string)
-            log.write("\n")
-
-    log.close()
     return the_string
 
 def nicklist(data, completion_item, buffer, completion):
