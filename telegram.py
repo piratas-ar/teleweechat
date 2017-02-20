@@ -97,19 +97,17 @@ def parse (server, modifier, data, the_string):
     return the_string
 
 def nicklist(data, completion_item, buffer, completion):
-    for username, properties in USERS.iteritems():
-        weechat.hook_completion_list_add(completion, username, 0, weechat.WEECHAT_LIST_POS_SORT)
+    for username in list(USERS.keys()):
+        weechat.hook_completion_list_add(completion, username, 1, weechat.WEECHAT_LIST_POS_SORT)
+        weechat.hook_completion_list_add(completion, '@' + username, 1, weechat.WEECHAT_LIST_POS_SORT)
     return weechat.WEECHAT_RC_OK
 
 # init
 
 if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
-
     for option, default_value in settings.iteritems():
         if not weechat.config_is_set_plugin(option):
             weechat.config_set_plugin(option, default_value)
 
-
-                # hook incoming messages for parsing
     weechat.hook_modifier('weechat_print', 'parse', '')
     weechat.hook_completion('telegram_nicklist', 'list of Telegram users', 'nicklist', '')
