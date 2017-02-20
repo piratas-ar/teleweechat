@@ -17,7 +17,7 @@ import weechat
 import re
 from random import choice
 
-SCRIPT_NAME    = 'telegram'
+SCRIPT_NAME    = 'teleirc'
 SCRIPT_AUTHOR  = 'fauno <fauno@partidopirata.com.ar>'
 SCRIPT_VERSION = '0.3.0'
 SCRIPT_LICENSE = 'GPL3'
