@@ -15,29 +15,28 @@
 
 import weechat
 import re
-from random import randint
+from random import choice
 
-SCRIPT_NAME    = "telegram"
-SCRIPT_AUTHOR  = "fauno <fauno@partidopirata.com.ar>"
-SCRIPT_VERSION = "0.3.0"
-SCRIPT_LICENSE = "GPL3"
-SCRIPT_DESC    = "Formats teleirc messages"
+SCRIPT_NAME    = 'telegram'
+SCRIPT_AUTHOR  = 'fauno <fauno@partidopirata.com.ar>'
+SCRIPT_VERSION = '0.3.0'
+SCRIPT_LICENSE = 'GPL3'
+SCRIPT_DESC    = 'Formats teleirc messages'
 
 settings = {
-    "username": "EmmaGoldman",
-    "re": "^(?P<update>\w+)(?P<separator>\W+?)<(?P<username>[^>]+)> (?P<dent>.+)$",
-    "me": "^(?P<update>\w+)(?P<separator>\W+?)<(?P<username>[^>]+)> \/me (?P<dent>.+)$",
+    'username': 'EmmaGoldman',
+    're': '^(?P<update>\w+)(?P<separator>\W+?)<(?P<username>[^>]+)> (?P<dent>.+)$',
+    'me': '^(?P<update>\w+)(?P<separator>\W+?)<(?P<username>[^>]+)> \/me (?P<dent>.+)$',
 
-    "nick_color": "green",
-    "hashtag_color": "blue",
-    "group_color": "red",
+    'nick_color': 'green',
+    'hashtag_color': 'blue',
 
-    "nick_color_identifier": "blue",
-    "hashtag_color_identifier": "green",
-    "group_color_identifier": "green",
+    'nick_color_identifier': 'blue',
+    'hashtag_color_identifier': 'green',
 
-    "nick_re": "(@)([a-zA-Z0-9]+ )",
-    "hashtag_re": "(#)([a-zA-Z0-9]+ )"
+    'nick_re': '(@)([a-zA-Z0-9]+ )',
+    'hashtag_re': '(#)([a-zA-Z0-9]+ )',
+    'reverse_color': 'off'
 }
 
 USERS = {}
@@ -64,13 +63,19 @@ def colorize (message):
 
     return message
 
+# TODO respect nick_color_force
+def random_nick_color ():
+    colors = weechat.config_string(weechat.config_get('weechat.color.chat_nick_colors')).split(',')
+
+    return choice(colors).replace(':', ',')
+
 def nick_color (nick):
     """Randomizes color for nicks"""
     if USERS.has_key(nick) and USERS[nick].has_key('color'):
         pass
     else:
         USERS[nick] = {}
-        USERS[nick]['color'] = str(randint(1,255))
+        USERS[nick]['color'] = random_nick_color()
 
     return ''.join([weechat.color(USERS[nick]['color']), nick, weechat.color('reset')])
 
