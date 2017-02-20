@@ -70,7 +70,7 @@ def nick_color (nick):
         pass
     else:
         USERS[nick] = {}
-        USERS[nick]['color'] = ''.join(['chat_nick_color', str(randint(1,255))])
+        USERS[nick]['color'] = str(randint(1,255))
 
     return ''.join([weechat.color(USERS[nick]['color']), nick, weechat.color('reset')])
 
