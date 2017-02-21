@@ -28,38 +28,28 @@ settings = {
     're': '^(?P<update>\w+)(?P<separator>\W+?)<(?P<username>[^>]+)> (?P<dent>.+)$',
     'me': '^(?P<update>\w+)(?P<separator>\W+?)<(?P<username>[^>]+)> \/me (?P<dent>.+)$',
 
-    'nick_color': 'green',
     'hashtag_color': 'blue',
 
-    'nick_color_identifier': 'blue',
-    'hashtag_color_identifier': 'green',
-
-    'nick_re': '(@)([a-zA-Z0-9]+ )',
-    'hashtag_re': '(#)([a-zA-Z0-9]+ )',
-    'reverse_color': 'off'
+    'mention_re': '(@)([a-zA-Z0-9]+)',
+    'hashtag_re': '(#)([a-zA-Z0-9]+)'
 }
 
 USERS = {}
 
 def colorize (message):
-    """Colorizes replies, hashtags and groups"""
+    """Colorizes mentions and hashtags"""
 
-    for identifier in ['nick','hashtag']:
-        identifier_name = ''.join([identifier, '_re'])
-        identifier_color = ''.join([identifier, '_color'])
-        identifier_color_identifier = ''.join([identifier, '_color_identifier'])
+    for identifier in ['mention','hashtag']:
+        identifier_re = re.compile(weechat.config_get_plugin('%s_re' % identifier), re.UNICODE)
 
-        identifier_re = re.compile(weechat.config_get_plugin(identifier_name), re.UNICODE)
+        for found in identifier_re.findall(message):
+            found_full = ''.join(found)
+            if identifier == 'mention':
+                replace = color(nick_color(found[1]), found_full)
+            else:
+                replace = color(weechat.config_get_plugin('%s_color' % identifier), found_full)
 
-        replace = r''.join([
-            weechat.color(weechat.config_get_plugin(identifier_color_identifier)),
-            '\\1',
-            weechat.color(weechat.config_get_plugin(identifier_color)),
-            '\\2',
-            weechat.color('reset')
-            ])
-
-        message = identifier_re.sub(replace, message)
+            message = message.replace(found_full, replace)
 
     return message
 
@@ -70,14 +60,16 @@ def random_nick_color ():
     return choice(colors).replace(':', ',')
 
 def nick_color (nick):
-    """Randomizes color for nicks"""
     if USERS.has_key(nick) and USERS[nick].has_key('color'):
         pass
     else:
         USERS[nick] = {}
         USERS[nick]['color'] = random_nick_color()
 
-    return ''.join([weechat.color(USERS[nick]['color']), nick, weechat.color('reset')])
+    return USERS[nick]['color']
+
+def color (color, string):
+    return ''.join([weechat.color(color), string, weechat.color('reset')])
 
 def parse (server, modifier, data, the_string):
     flags = data.split(';')[2].split(',')
@@ -92,7 +84,7 @@ def parse (server, modifier, data, the_string):
 
         if m:
             dent = colorize(m.group('dent'))
-            username = nick_color(m.group('username'))
+            username = color(nick_color(m.group('username')), m.group('username'))
             the_string = ''.join([ username, m.group('separator'), dent ])
     return the_string
 
